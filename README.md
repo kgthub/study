@@ -7,3 +7,6 @@ csv 파일의 데이터를 DB 전송하는 코드
 ### download s3 file
 s3의 파일을 local pc에 저장하는 코드
 csv 파일을 분할하여 저장하는 코드도 같이 있음
+
+### Spark to PostgreSQL connect
+spark와 postgreSQL을 연결하는 코드
