@@ -1,0 +1,33 @@
+from pyspark.sql import SparkSession
+
+#Spark, PostgreSQL 연결
+spark =  SparkSession \
+         .builder \
+         .appName("dd")\
+         .config("spark.driver.extraClassPath", "C:\\Program Files\\Java\\postgresql-42.7.1.jar") \
+         .getOrCreate()
+
+query = "select * from temp_scm.Invoice"
+
+jdbcDF = spark.read \
+    .format("jdbc") \
+    .option("url", "jdbc:postgresql://ip:port number/DB name") \
+    .option("query", query) \
+    .option("driver", "org.postgresql.Driver")\
+    .option("user", "user name") \
+    .option("password", "password") \
+    .load()
+
+jdbcDF.write \
+    .format("jdbc") \
+    .option("url", "jdbc:postgresql://ip:port number/DB name") \
+    .option("driver", "org.postgresql.Driver")\
+    .option("user", "user name") \
+    .option("password", "password") \
+    .option("dbtable", "table name")\
+    .save(mode='append')
+
+
+jdbcDF.show()
+
+spark.stop()
