@@ -1,0 +1,41 @@
+import csv
+import psycopg2
+
+csv_file = open("C:\\Users\\KimGT\\Desktop\\db\\Invoice_202402011717.csv", "r", encoding="utf-8", errors="", newline="" )
+
+f = csv.reader(csv_file, delimiter=",", doublequote=True, lineterminator="\r\n", quotechar='"', skipinitialspace=True)
+
+
+# header = next(f)
+# print(header)
+
+count = 0
+value = ''
+
+for row in f:
+# #     #row는List
+# #     #row[0]로 필요한 항목을 추출할 수 있다.
+    count+= 1
+    if count > 1:
+        value += "('"+"', '".join(row) + "'"+"), "
+
+    else:
+        column = '(' + ',\n'.join(row) + ')'
+
+# print(column)
+# print(value)
+
+q = "insert into temp_scm.Invoice " + column + " values " + value[:-2] +";"
+
+print(q)
+
+#DBeaver에 연결
+db = psycopg2.connect(host='ip', dbname='DB name',user='user name',password='password',port=port number)
+cursor = db.cursor()
+cursor.execute(q)
+
+db.commit()
+cursor.close()
+
+
+print('clear')
