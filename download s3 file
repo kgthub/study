@@ -1,0 +1,55 @@
+import pandas as pd
+import os
+import time
+import boto3
+
+aws_access_key_id = 'aws_access_key_id'
+aws_secret_access_key = 'aws_secret_access_key'
+aws_region = 'ap-northeast-2'
+
+# S3 버킷 이름 및 파일 경로 설정
+bucket_name = 'dd-dbx-training'
+s3_key = 'data-sqs-test/'  # S3 버킷 내 파일 경로
+
+# 현재 스크립트 파일의 디렉토리 경로를 가져옵니다.
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# # 스크립트 파일이 위치한 디렉토리로 이동합니다.
+os.chdir(script_dir)
+
+# # 현재 작업 디렉토리 내의 모든 파일 목록을 가져옵니다.
+file_list = os.listdir()
+
+# S3 클라이언트 생성
+s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+                  region_name=aws_region)
+
+filename = ''
+
+
+def split_csv(input_file, output_prefix, chunk_size, s3):
+    # 대상 CSV 파일을 읽습니다.
+    df = pd.read_csv(input_file)
+
+    # 데이터를 작은 청크로 분할하고 각 청크를 개별 CSV 파일로 저장합니다.
+    num_chunks = len(df) // chunk_size + 1
+    for i in range(num_chunks):
+        chunk = df[i * chunk_size: (i + 1) * chunk_size]
+        chunk_file = f"{output_prefix}_{i}.csv"
+        chunk.to_csv(chunk_file, index=False)
+        s3.upload_file(chunk_file, bucket_name, s3_key + chunk_file)
+        print(f"{chunk_file} uploaded to S3")
+        time.sleep(5)
+
+
+# 대상 CSV 파일 경로
+input_file = "C:\\Users\\KimGT\\Desktop\\rawdata_save_test\\Invoice_202402011717.csv"
+
+
+# 출력 파일의 접두사 및 경로
+output_prefix = "Invoice"
+
+# 각 청크의 행 수
+chunk_size = 100
+
+split_csv(input_file, output_prefix, chunk_size, s3)
